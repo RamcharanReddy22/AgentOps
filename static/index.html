@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>AgentOps — Market Research Autopilot</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet"/>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css" rel="stylesheet"/>
+  <style>
+    :root {
+      --accent: #00c47a;
+      --accent-light: #00e68a;
+      --accent-glow: rgba(0,196,122,0.15);
+      --glass-bg: rgba(255,255,255,0.05);
+      --glass-border: rgba(255,255,255,0.12);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.3);
+      --bg: #0a0f0d;
+      --text: #f0f4f2;
+      --text-muted: #8a9e94;
+      --input-bg: rgba(255,255,255,0.06);
+    }
+    [data-theme="light"] {
+      --glass-bg: rgba(255,255,255,0.6);
+      --glass-border: rgba(0,0,0,0.08);
+      --glass-shadow: 0 8px 32px rgba(0,0,0,0.1);
+      --bg: #f0f7f4;
+      --text: #0d1f17;
+      --text-muted: #4a6b58;
+      --input-bg: rgba(255,255,255,0.8);
+    }
+    * { transition: background 0.3s, color 0.3s, border-color 0.3s; box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Display', 'Segoe UI', sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    body::before {
+      content: '';
+      position: fixed;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse at 20% 50%, rgba(0,196,122,0.08) 0%, transparent 50%),
+                  radial-gradient(ellipse at 80% 20%, rgba(0,196,122,0.05) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    .content-wrap { position: relative; z-index: 1; }
+    .navbar-glass {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border-bottom: 1px solid var(--glass-border);
+      padding: 1rem 2rem;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    .logo-text { font-size: 1.4rem; font-weight: 800; color: var(--accent); letter-spacing: -1px; }
+    .logo-sub { font-size: 0.7rem; color: var(--text-muted); letter-spacing: 2px; text-transform: uppercase; }
+    .theme-btn {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      color: var(--text);
+      border-radius: 50px;
+      padding: 0.4rem 1.1rem;
+      font-size: 0.82rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.4rem;
+      backdrop-filter: blur(10px);
+      font-weight: 600;
+    }
+    .theme-btn:hover { border-color: var(--accent); color: var(--accent); }
+    .hero { text-align: center; padding: 5rem 1rem 2.5rem; }
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      background: var(--accent-glow);
+      border: 1px solid rgba(0,196,122,0.3);
+      color: var(--accent);
+      padding: 0.35rem 1rem;
+      border-radius: 50px;
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 1.5rem;
+    }
+    .hero h1 {
+      font-size: clamp(2.2rem, 5vw, 3.8rem);
+      font-weight: 800;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 1rem;
+    }
+    .hero h1 span { color: var(--accent); }
+    .hero p { color: var(--text-muted); font-size: 1.05rem; max-width: 480px; margin: 0 auto 1.5rem; line-height: 1.6; }
+    .example-chips { display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 2rem; }
+    .chip {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 50px;
+      padding: 0.3rem 0.9rem;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      backdrop-filter: blur(10px);
+    }
+    .chip:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+    .search-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(24px);
+      -webkit-backdrop-filter: blur(24px);
+      border: 1px solid var(--glass-border);
+      border-radius: 24px;
+      padding: 2rem;
+      box-shadow: var(--glass-shadow);
+      max-width: 640px;
+      margin: 0 auto;
+    }
+    .search-input {
+      background: var(--input-bg);
+      border: 1.5px solid var(--glass-border);
+      border-radius: 14px;
+      color: var(--text);
+      font-size: 1rem;
+      padding: 0.9rem 1.2rem;
+      width: 100%;
+      outline: none;
+    }
+    .search-input::placeholder { color: var(--text-muted); }
+    .search-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px var(--accent-glow); }
+    .btn-analyze {
+      background: var(--accent);
+      border: none;
+      border-radius: 14px;
+      color: #000;
+      font-weight: 700;
+      font-size: 1rem;
+      padding: 0.9rem 2rem;
+      width: 100%;
+      cursor: pointer;
+      margin-top: 0.75rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.5rem;
+      letter-spacing: -0.3px;
+    }
+    .btn-analyze:hover { background: var(--accent-light); transform: translateY(-1px); box-shadow: 0 4px 20px var(--accent-glow); }
+    .btn-analyze:disabled { opacity: 0.6; cursor: not-allowed; transform: none; box-shadow: none; }
+    .upload-zone {
+      border: 1.5px dashed var(--glass-border);
+      border-radius: 14px;
+      padding: 0.9rem;
+      text-align: center;
+      cursor: pointer;
+      color: var(--text-muted);
+      font-size: 0.85rem;
+      margin-top: 0.75rem;
+    }
+    .upload-zone:hover { border-color: var(--accent); color: var(--accent); background: var(--accent-glow); }
+    .agent-trace { max-width: 640px; margin: 2rem auto 0; }
+    .agent-step {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: 14px;
+      padding: 0.85rem 1.2rem;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      backdrop-filter: blur(10px);
+      opacity: 0.35;
+    }
+    .agent-step.active { opacity: 1; border-color: var(--accent); background: var(--accent-glow); }
+    .agent-step.done { opacity: 1; border-color: rgba(0,196,122,0.35); }
+    .step-icon {
+      width: 34px; height: 34px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.9rem;
+      flex-shrink: 0;
+    }
+    .step-icon.waiting { background: var(--glass-bg); color: var(--text-muted); border: 1px solid var(--glass-border); }
+    .step-icon.active { background: var(--accent-glow); color: var(--accent); border: 1px solid var(--accent); animation: pulse 1.5s infinite; }
+    .step-icon.done { background: rgba(0,196,122,0.2); color: var(--accent); border: 1px solid rgba(0,196,122,0.4); }
+    @keyframes pulse { 0%,100% { box-shadow: 0 0 0 0 var(--accent-glow); } 50% { box-shadow: 0 0 0 8px transparent; } }
+    .step-label { font-size: 0.88rem; font-weight: 700; }
+    .step-desc { font-size: 0.76rem; color: var(--text-muted); margin-top: 1px; }
+    .results-section { max-width: 900px; margin: 3rem auto; padding: 0 1rem 4rem; }
+    .glass-card {
+      background: var(--glass-bg);
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      border: 1px solid var(--glass-border);
+      border-radius: 20px;
+      padding: 1.5rem;
+      box-shadow: var(--glass-shadow);
+      margin-bottom: 1.5rem;
+    }
+    .card-title {
+      font-size: 0.72rem;
+      font-weight: 800;
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      color: var(--accent);
+      margin-bottom: 1.1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .report-content {
+      font-size: 0.93rem;
+      line-height: 1.75;
+      color: var(--text);
+      white-space: pre-wrap;
+      max-height: 600px;
+      overflow-y: auto;
+    }
+    .report-content::-webkit-scrollbar { width: 4px; }
+    .report-content::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+    .confidence-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.45rem 1.1rem;
+      border-radius: 50px;
+      font-weight: 800;
+      font-size: 1rem;
+    }
+    .confidence-high { background: rgba(0,196,122,0.15); color: var(--accent); border: 1px solid rgba(0,196,122,0.35); }
+    .confidence-mid { background: rgba(255,193,7,0.15); color: #ffc107; border: 1px solid rgba(255,193,7,0.3); }
+    .confidence-low { background: rgba(220,53,69,0.15); color: #dc3545; border: 1px solid rgba(220,53,69,0.3); }
+    .flagged-item {
+      background: rgba(255,193,7,0.07);
+      border: 1px solid rgba(255,193,7,0.2);
+      border-radius: 8px;
+      padding: 0.4rem 0.85rem;
+      font-size: 0.8rem;
+      color: #ffc107;
+      margin-bottom: 0.4rem;
+    }
+    .inject-alert {
+      background: rgba(220,53,69,0.1);
+      border: 1px solid rgba(220,53,69,0.3);
+      border-radius: 10px;
+      padding: 0.75rem 1rem;
+      color: #dc3545;
+      font-size: 0.85rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .chart-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
+    @media (max-width: 600px) { .chart-grid { grid-template-columns: 1fr; } }
+    .chart-img { width: 100%; border-radius: 12px; border: 1px solid var(--glass-border); }
+    .nav-tabs-glass { border-bottom: 1px solid var(--glass-border); margin-bottom: 1.2rem; display: flex; }
+    .nav-tabs-glass .nav-link {
+      color: var(--text-muted);
+      border: none;
+      border-bottom: 2px solid transparent;
+      background: none;
+      padding: 0.5rem 1rem;
+      font-size: 0.83rem;
+      font-weight: 700;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .nav-tabs-glass .nav-link.active { color: var(--accent); border-bottom-color: var(--accent); }
+    .nav-tabs-glass .nav-link:hover { color: var(--accent); }
+    .spinner-accent {
+      width: 18px; height: 18px;
+      border: 2px solid rgba(0,196,122,0.3);
+      border-top-color: var(--accent);
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      flex-shrink: 0;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+<div class="content-wrap">
+
+  <!-- Navbar -->
+  <nav class="navbar-glass d-flex justify-content-between align-items-center">
+    <div>
+      <div class="logo-text">AgentOps</div>
+      <div class="logo-sub">Market Research Autopilot</div>
+    </div>
+    <button class="theme-btn" onclick="toggleTheme()">
+      <i class="bi bi-circle-half" id="theme-icon"></i>
+      <span id="theme-label">Light Mode</span>
+    </button>
+  </nav>
+
+  <!-- Hero -->
+  <div class="hero">
+    <div class="hero-badge"><i class="bi bi-stars"></i> 5 AI Agents Working Together</div>
+    <h1>Market Research,<br><span>Automated.</span></h1>
+    <p>Type any publicly listed company. Get a full research brief with real financials, live charts, and AI insights in seconds.</p>
+
+    <!-- Example chips -->
+    <div class="example-chips">
+      <span class="chip" onclick="setQuery('Tesla')">Tesla</span>
+      <span class="chip" onclick="setQuery('Apple')">Apple</span>
+      <span class="chip" onclick="setQuery('Tata Steel')">Tata Steel</span>
+      <span class="chip" onclick="setQuery('Infosys')">Infosys</span>
+      <span class="chip" onclick="setQuery('Nvidia')">Nvidia</span>
+      <span class="chip" onclick="setQuery('Reliance')">Reliance</span>
+    </div>
+
+    <!-- Search Card -->
+    <div class="search-card">
+      <input
+        type="text"
+        class="search-input"
+        id="queryInput"
+        placeholder="e.g. Tesla, Tata Steel, Apple, Infosys..."
+        onkeydown="if(event.key==='Enter') analyze()"
+      />
+      <button class="btn-analyze" id="analyzeBtn" onclick="analyze()">
+        <i class="bi bi-lightning-charge-fill"></i> Generate Report
+      </button>
+      <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+        <i class="bi bi-file-earmark-arrow-up me-1"></i>
+        <span id="uploadLabel">Upload annual report PDF for deeper analysis</span>
+      </div>
+      <input type="file" id="fileInput" accept=".pdf" class="hidden" onchange="uploadFile(this)"/>
+    </div>
+
+    <!-- Agent Trace — hidden by default -->
+    <div class="agent-trace hidden" id="agentTrace">
+      <div class="agent-step" id="step-planner">
+        <div class="step-icon waiting" id="icon-planner"><i class="bi bi-diagram-3"></i></div>
+        <div>
+          <div class="step-label">Planner Agent</div>
+          <div class="step-desc">Breaking down query into research tasks</div>
+        </div>
+        <div class="ms-auto hidden spinner-accent" id="spin-planner"></div>
+      </div>
+      <div class="agent-step" id="step-researcher">
+        <div class="step-icon waiting" id="icon-researcher"><i class="bi bi-search"></i></div>
+        <div>
+          <div class="step-label">Researcher Agent</div>
+          <div class="step-desc">Searching web and uploaded documents</div>
+        </div>
+        <div class="ms-auto hidden spinner-accent" id="spin-researcher"></div>
+      </div>
+      <div class="agent-step" id="step-analyst">
+        <div class="step-icon waiting" id="icon-analyst"><i class="bi bi-graph-up"></i></div>
+        <div>
+          <div class="step-label">Analyst Agent</div>
+          <div class="step-desc">Fetching live financials and generating charts</div>
+        </div>
+        <div class="ms-auto hidden spinner-accent" id="spin-analyst"></div>
+      </div>
+      <div class="agent-step" id="step-writer">
+        <div class="step-icon waiting" id="icon-writer"><i class="bi bi-pencil-square"></i></div>
+        <div>
+          <div class="step-label">Writer Agent</div>
+          <div class="step-desc">Compiling structured report</div>
+        </div>
+        <div class="ms-auto hidden spinner-accent" id="spin-writer"></div>
+      </div>
+      <div class="agent-step" id="step-safety">
+        <div class="step-icon waiting" id="icon-safety"><i class="bi bi-shield-check"></i></div>
+        <div>
+          <div class="step-label">Safety Agent</div>
+          <div class="step-desc">Fact-checking and scoring confidence</div>
+        </div>
+        <div class="ms-auto hidden spinner-accent" id="spin-safety"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Results — hidden by default -->
+  <div class="results-section hidden" id="resultsSection">
+
+    <div class="glass-card">
+      <div class="card-title"><i class="bi bi-shield-check"></i> Report Quality</div>
+      <div class="d-flex align-items-center gap-3 flex-wrap mb-3">
+        <div class="confidence-badge" id="confidenceBadge"></div>
+        <div style="font-size:0.88rem; color:var(--text-muted); flex:1" id="safetySummary"></div>
+      </div>
+      <div id="injectionAlert" class="inject-alert mb-3 hidden">
+        <i class="bi bi-exclamation-triangle-fill"></i> Prompt injection detected!
+      </div>
+      <div id="flaggedSection" class="hidden">
+        <div style="font-size:0.75rem;color:var(--text-muted);margin-bottom:0.5rem;font-weight:700;text-transform:uppercase;letter-spacing:1px;">Flagged Claims</div>
+        <div id="flaggedList"></div>
+      </div>
+    </div>
+
+    <div class="glass-card hidden" id="chartsCard">
+      <div class="card-title"><i class="bi bi-bar-chart-line"></i> Financial Charts</div>
+      <div class="chart-grid" id="chartGrid"></div>
+    </div>
+
+    <div class="glass-card">
+      <div class="card-title"><i class="bi bi-file-richtext"></i> Research Report</div>
+      <div class="nav-tabs-glass">
+        <button class="nav-link active" id="tab-full" onclick="showTab('full')">Full Report</button>
+        <button class="nav-link" id="tab-research" onclick="showTab('research')">Research</button>
+        <button class="nav-link" id="tab-financial" onclick="showTab('financial')">Financial</button>
+      </div>
+      <div class="report-content" id="reportContent"></div>
+    </div>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+  let reportData = {};
+  const steps = ['planner','researcher','analyst','writer','safety'];
+  let stepInterval = null;
+  let stepIndex = 0;
+
+  function setQuery(name) {
+    document.getElementById('queryInput').value = name;
+    document.getElementById('queryInput').focus();
+  }
+
+  function toggleTheme() {
+    const html = document.documentElement;
+    const isDark = html.getAttribute('data-theme') === 'dark';
+    html.setAttribute('data-theme', isDark ? 'light' : 'dark');
+    document.getElementById('theme-label').textContent = isDark ? 'Dark Mode' : 'Light Mode';
+    document.getElementById('theme-icon').className = isDark ? 'bi bi-moon-fill' : 'bi bi-circle-half';
+  }
+
+  function activateStep(i) {
+    const s = steps[i];
+    document.getElementById(`step-${s}`).className = 'agent-step active';
+    document.getElementById(`icon-${s}`).className = 'step-icon active';
+    document.getElementById(`spin-${s}`).classList.remove('hidden');
+  }
+
+  function completeStep(i) {
+    const s = steps[i];
+    document.getElementById(`step-${s}`).className = 'agent-step done';
+    document.getElementById(`icon-${s}`).innerHTML = '<i class="bi bi-check-lg"></i>';
+    document.getElementById(`icon-${s}`).className = 'step-icon done';
+    document.getElementById(`spin-${s}`).classList.add('hidden');
+  }
+
+  function startAgentTrace() {
+    stepIndex = 0;
+    steps.forEach(s => {
+      document.getElementById(`step-${s}`).className = 'agent-step';
+      document.getElementById(`icon-${s}`).className = 'step-icon waiting';
+      document.getElementById(`spin-${s}`).classList.add('hidden');
+    });
+    document.getElementById('agentTrace').classList.remove('hidden');
+    activateStep(0);
+    stepInterval = setInterval(() => {
+      if (stepIndex < steps.length - 1) {
+        completeStep(stepIndex);
+        stepIndex++;
+        activateStep(stepIndex);
+      }
+    }, 8000);
+  }
+
+  function finishTrace() {
+    clearInterval(stepInterval);
+    steps.forEach((s, i) => completeStep(i));
+  }
+
+  async function analyze() {
+    const query = document.getElementById('queryInput').value.trim();
+    if (!query) return;
+
+    const btn = document.getElementById('analyzeBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<div class="spinner-accent"></div> Analyzing...';
+
+    // Reset results
+    document.getElementById('resultsSection').classList.add('hidden');
+    document.getElementById('flaggedSection').classList.add('hidden');
+    document.getElementById('injectionAlert').classList.add('hidden');
+    document.getElementById('chartsCard').classList.add('hidden');
+    document.getElementById('flaggedList').innerHTML = '';
+    document.getElementById('chartGrid').innerHTML = '';
+    document.getElementById('reportContent').textContent = '';
+
+    startAgentTrace();
+
+    try {
+      const res = await fetch('/analyze/full', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({query: `Give me a market research report on ${query}`})
+      });
+      const data = await res.json();
+      reportData = data;
+      finishTrace();
+      renderResults(data);
+    } catch(e) {
+      alert('Something went wrong: ' + e.message);
+    } finally {
+      btn.disabled = false;
+      btn.innerHTML = '<i class="bi bi-lightning-charge-fill"></i> Generate Report';
+    }
+  }
+
+  function renderResults(data) {
+    const safety = data.safety || {};
+    const score = safety.confidence_score || 0;
+    const badge = document.getElementById('confidenceBadge');
+    badge.textContent = `${score}% Confidence`;
+    badge.className = 'confidence-badge ' + (score >= 75 ? 'confidence-high' : score >= 50 ? 'confidence-mid' : 'confidence-low');
+    document.getElementById('safetySummary').textContent = safety.summary || '';
+
+    if (safety.prompt_injection_detected) {
+      document.getElementById('injectionAlert').classList.remove('hidden');
+    }
+
+    const flagged = safety.flagged_claims || [];
+    if (flagged.length > 0) {
+      document.getElementById('flaggedSection').classList.remove('hidden');
+      document.getElementById('flaggedList').innerHTML = flagged.map(f =>
+        `<div class="flagged-item"><i class="bi bi-exclamation-circle me-1"></i>${f}</div>`
+      ).join('');
+    }
+
+    const charts = data.charts || [];
+    if (charts.length > 0) {
+      const labels = ['Revenue Trend', 'Stock Price (Last 10 Days)'];
+      document.getElementById('chartGrid').innerHTML = charts.map((filename, i) => `
+        <div>
+          <div style="font-size:0.78rem;color:var(--text-muted);margin-bottom:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:0.5px">${labels[i] || 'Chart'}</div>
+          <img src="/charts/${filename}?t=${Date.now()}" class="chart-img" onerror="this.parentElement.style.display='none'"/>
+        </div>
+      `).join('');
+      document.getElementById('chartsCard').classList.remove('hidden');
+    }
+
+    showTab('full');
+    document.getElementById('resultsSection').classList.remove('hidden');
+    setTimeout(() => {
+      document.getElementById('resultsSection').scrollIntoView({behavior:'smooth'});
+    }, 300);
+  }
+
+  function showTab(tab) {
+    ['full','research','financial'].forEach(t => {
+      document.getElementById(`tab-${t}`).classList.remove('active');
+    });
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    const content = {
+      full: reportData.report || '',
+      research: reportData.research || '',
+      financial: reportData.financial || ''
+    };
+    document.getElementById('reportContent').textContent = content[tab] || '';
+  }
+
+  async function uploadFile(input) {
+    const file = input.files[0];
+    if (!file) return;
+    const label = document.getElementById('uploadLabel');
+    label.textContent = 'Uploading...';
+    const formData = new FormData();
+    formData.append('file', file);
+    try {
+      const res = await fetch('/upload', {method:'POST', body: formData});
+      const data = await res.json();
+      label.textContent = `✓ ${data.filename} (${data.pages_uploaded} pages) ready`;
+    } catch(e) {
+      label.textContent = 'Upload failed. Try again.';
+    }
+  }
+</script>
+</body>
+</html>
